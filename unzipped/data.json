@@ -1,0 +1,114 @@
+[
+    [
+        {
+            "left": {
+                "left": {
+                    "left": {
+                        "left": "i",
+                        "right": {
+                            "left": {
+                                "left": "b",
+                                "right": "p"
+                            },
+                            "right": {
+                                "left": "y",
+                                "right": {
+                                    "left": {
+                                        "left": "'",
+                                        "right": "j"
+                                    },
+                                    "right": "\n"
+                                }
+                            }
+                        }
+                    },
+                    "right": {
+                        "left": "s",
+                        "right": "a"
+                    }
+                },
+                "right": {
+                    "left": {
+                        "left": "n",
+                        "right": {
+                            "left": "u",
+                            "right": "d"
+                        }
+                    },
+                    "right": "e"
+                }
+            },
+            "right": {
+                "left": {
+                    "left": {
+                        "left": {
+                            "left": "m",
+                            "right": {
+                                "left": {
+                                    "left": "\r",
+                                    "right": "L"
+                                },
+                                "right": "g"
+                            }
+                        },
+                        "right": "o"
+                    },
+                    "right": {
+                        "left": "t",
+                        "right": "r"
+                    }
+                },
+                "right": {
+                    "left": {
+                        "left": {
+                            "left": "h",
+                            "right": {
+                                "left": {
+                                    "left": "v",
+                                    "right": "w"
+                                },
+                                "right": "c"
+                            }
+                        },
+                        "right": {
+                            "left": {
+                                "left": {
+                                    "left": {
+                                        "left": {
+                                            "left": {
+                                                "left": "-",
+                                                "right": "2"
+                                            },
+                                            "right": "0"
+                                        },
+                                        "right": "k"
+                                    },
+                                    "right": {
+                                        "left": ".",
+                                        "right": {
+                                            "left": {
+                                                "left": "A",
+                                                "right": "x"
+                                            },
+                                            "right": "T"
+                                        }
+                                    }
+                                },
+                                "right": "l"
+                            },
+                            "right": {
+                                "left": "f",
+                                "right": {
+                                    "left": "I",
+                                    "right": ","
+                                }
+                            }
+                        }
+                    },
+                    "right": " "
+                }
+            }
+        },
+        462737
+    ]
+]
