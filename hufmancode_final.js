@@ -1,17 +1,24 @@
+const AdmZip = require('adm-zip');
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const archiver = require('archiver');
-
+const flash = require('connect-flash');
+const session = require('express-session');
 const app = express();
 const port = 3000;
+app.use(session({ secret: 'yoursecret', resave: true, saveUninitialized: true }));
 
+// Connect flash
+app.use(flash());
 
+app.use(express.urlencoded({ extended: true }))
 
 let name = "";
 
 app.set('view engine', 'ejs');
 
+app.use(express.static('public'))
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -22,11 +29,37 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage });
+const pdfstorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'pdfcompressed/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    },
+});
+
+
+const upload = multer({ storage: storage });
+const pdfupload = multer({ storage: pdfstorage });
 
 app.get('/huffman', (req, res) => {
-    res.render('txtupload');
+
+    const filesize = req.flash('size')
+
+    res.render('option', { filesize });
 });
+
+app.post("/huffman", (req, res) => {
+    const { choice } = req.body;
+    if (choice === "text") {
+        res.render("txtupload")
+    }
+    else if (choice === "pdf") {
+        res.render("pdfupload")
+    }
+})
+
+
 
 
 app.post('/upload', upload.single('file'), (req, res) => {
@@ -34,7 +67,13 @@ app.post('/upload', upload.single('file'), (req, res) => {
     console.log(req.file)
     const { filename } = req.file
     name = filename
-    res.render("huffman")
+    if (req.file.size < 20000000) {
+
+        res.render("huffman")
+    } else {
+        req.flash('size', req.file.size)
+        res.redirect('/huffman')
+    }
 
 });
 
@@ -133,6 +172,43 @@ function compress() {
     }
 }
 
+function Pdfcompress() {
+    const outputFilePath = 'pdfcompressed.zip';
+    const output = fs.createWriteStream(outputFilePath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    output.on('close', () => {
+        console.log('Compression complete!');
+    });
+
+    archive.on('error', (err) => {
+        throw err;
+    });
+
+    archive.pipe(output);
+    archive.directory('pdfcompressed/', false);
+    archive.finalize();
+
+
+}
+function Pdfdecompress() {
+
+
+    function unzipFile(zipFilePath, destinationPath) {
+        const zip1 = new AdmZip(zipFilePath);
+        zip1.extractAllTo(destinationPath, true);
+        console.log('Unzipping complete!');
+    }
+
+    // Example usage
+    const compressedFilePath = 'uploads/pdfcompressed.zip';
+    const extractionPath = 'pdfdecompressed';
+
+    unzipFile(compressedFilePath, extractionPath);
+
+}
+
+
 
 
 function decompress() {
@@ -185,8 +261,6 @@ function decompress() {
         return binaryString;
     }
 
-    const AdmZip = require('adm-zip');
-
     function unzipFile(zipFilePath, destinationPath) {
         const zip = new AdmZip(zipFilePath);
         zip.extractAllTo(destinationPath, true);
@@ -200,6 +274,7 @@ function decompress() {
     unzipFile(compressedFilePath, extractionPath);
 
 
+    console.log("here")
 
     // Example usage
     const filename = 'unzipped/binary_data.bin';
@@ -225,6 +300,29 @@ app.get('/encode', (req, res) => {
 
 app.get('/huffman/decompress', (req, res) => {
     res.render('decompress.ejs');
+})
+
+app.post('/pdfupload', pdfupload.single('file'), (req, res) => {
+
+    res.render("pdfhuffman")
+    console.log(req.file)
+
+
+})
+
+app.get('/pdfencode', (req, res) => {
+    Pdfcompress();
+    res.render("pdf_decompress_redirect")
+
+})
+
+app.get("/huffman/pdf-decompress", (req, res) => {
+    res.render("pdf_decompress.ejs")
+})
+
+app.post("/huffman/pdf-decompress", upload.single('file'), (req, res) => {
+    Pdfdecompress();
+    res.redirect('/huffman');
 })
 
 app.post('/huffman/decompress', upload.single('file'), (req, res) => {

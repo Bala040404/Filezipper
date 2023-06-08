@@ -10,16 +10,20 @@
 </head>
 
 <body>
+    <% if(filesize!='' ){%>
 
-    <form action="/huffman" method="post">
-        <label for="choice">Choose a format :</label>
-        <select id="choice" name="choice">
-            <option name="pdf" value="pdf">pdf</option>
-            <option name="text" value="text">text</option>
+        <h1>Sorry the file size is greater than 20 mb ,The isze-<%= filesize %>
+        </h1>
+        <% }%>
+            <form action="/huffman" method="post">
+                <label for="choice">Choose a format :</label>
+                <select id="choice" name="choice">
+                    <option name="pdf" value="pdf">pdf</option>
+                    <option name="text" value="text">text</option>
 
-        </select>
-        <button>ok</button>
-    </form>
+                </select>
+                <button>ok</button>
+            </form>
 </body>
 
 </html>
