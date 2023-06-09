@@ -14,7 +14,7 @@ app.use(flash());
 
 app.use(express.urlencoded({ extended: true }))
 
-let name = "";
+let name = [];
 
 app.set('view engine', 'ejs');
 
@@ -62,20 +62,66 @@ app.post("/huffman", (req, res) => {
 
 
 
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.array('file'), (req, res) => {
 
-    console.log(req.file)
-    const { filename } = req.file
-    name = filename
-    if (req.file.size < 20000000) {
+    name = req.files
+    console.log(name)
+    let size = 0;
+    for (let file of name) {
+        size += file.size;
+    }
+    //add size of all files to size
+
+    if (size < 20000000) {
 
         res.render("huffman")
     } else {
-        req.flash('size', req.file.size)
+        req.flash('size', size)
         res.redirect('/huffman')
     }
 
 });
+
+app.post('/pdfupload', pdfupload.array('file'), (req, res) => {
+
+    res.render("pdfhuffman")
+    console.log(req.files)
+
+
+})
+
+app.get('/encode', (req, res) => {
+    console.log(name)
+    compress()
+    res.render('decompress_redirect')
+
+})
+app.get('/pdfencode', (req, res) => {
+    Pdfcompress();
+    res.render("pdf_decompress_redirect")
+
+})
+
+app.get('/huffman/decompress', (req, res) => {
+    res.render('decompress.ejs');
+})
+
+
+
+app.get("/huffman/pdf-decompress", (req, res) => {
+    res.render("pdf_decompress.ejs")
+})
+app.post('/huffman/decompress', upload.single('file'), (req, res) => {
+    decompress()
+    res.redirect('/huffman')
+})
+
+app.post("/huffman/pdf-decompress", upload.single('file'), (req, res) => {
+    Pdfdecompress();
+    res.redirect('/huffman');
+})
+
+
 
 function compress() {
     class Node {
@@ -100,11 +146,15 @@ function compress() {
     }
 
 
-
-    const word = fs.readFileSync(`uploads/${name}`, 'utf-8');
-
-
     let frequency = {};
+    let word = '';
+    for (let i = 0; i < name.length; i++) {
+
+
+        word = word + fs.readFileSync(`uploads/${name[i].originalname}`, 'utf-8');
+
+
+    }
 
     for (const letter of word) {
         if (letter in frequency) {
@@ -126,7 +176,6 @@ function compress() {
         nodes.push([n, code1 + code2]);
         nodes.sort((a, b) => b[1] - a[1]);
     }
-
     const code = huffmanCode(nodes[0][0]);
     let coded = '';
 
@@ -290,46 +339,6 @@ function decompress() {
 
     });
 }
-
-app.get('/encode', (req, res) => {
-    console.log(name)
-    compress()
-    res.render('decompress_redirect')
-
-})
-
-app.get('/huffman/decompress', (req, res) => {
-    res.render('decompress.ejs');
-})
-
-app.post('/pdfupload', pdfupload.single('file'), (req, res) => {
-
-    res.render("pdfhuffman")
-    console.log(req.file)
-
-
-})
-
-app.get('/pdfencode', (req, res) => {
-    Pdfcompress();
-    res.render("pdf_decompress_redirect")
-
-})
-
-app.get("/huffman/pdf-decompress", (req, res) => {
-    res.render("pdf_decompress.ejs")
-})
-
-app.post("/huffman/pdf-decompress", upload.single('file'), (req, res) => {
-    Pdfdecompress();
-    res.redirect('/huffman');
-})
-
-app.post('/huffman/decompress', upload.single('file'), (req, res) => {
-    decompress()
-    res.redirect('/huffman')
-})
-
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
