@@ -92,15 +92,12 @@ const pdfupload = multer({ storage: pdfstorage });
 
 //necessary routes
 
-app.get("/huffman", (req, res) => {
+app.get("/home", (req, res) => {
     const filesize = req.flash("size");
     res.render("option", { filesize });
 });
 
-
-
-
-app.post("/huffman", (req, res) => {
+app.post("/home", (req, res) => {
     const { choice } = req.body;
     if (choice === "text") {
         res.render("txtupload");
@@ -109,83 +106,65 @@ app.post("/huffman", (req, res) => {
     }
 });
 
-
-
-
-app.post("/upload", upload.array("file"), (req, res) => {
+//PDF related routes
+app.post("/pdf", pdfupload.array("file"), (req, res) => {
     name = req.files;
-    console.log(name);
     let size = 0;
     for (let file of name) {
         size += file.size;
     }
     if (size < 20000000) {
-        res.render("huffman");
+        Pdfcompress();
+        res.render("pdf_downloadpage");
     } else {
         req.flash("size", size);
-        res.redirect("/huffman");
+        res.redirect("/home");
+    }
+});
+
+app.get("/pdfdecompress", (req, res) => {
+    res.render("pdf_decompress.ejs");
+});
+
+app.get("/pdfupload/pdfdownloaded", (req, res) => {
+    res.download('./pdfcompressed.zip')
+})
+
+app.post("/pdfdecompress", upload.single("file"), (req, res) => {
+    Pdfdecompress(req.file.filename);
+    res.redirect('/home')
+});
+
+//TXT related
+app.post("/txt", upload.array("file"), (req, res) => {
+    name = req.files;
+    let size = 0;
+    for (let file of name) {
+        size += file.size;
+    }
+    if (size < 200000) {
+        compress();
+        res.render("text_downloadpage");
+    } else {
+        req.flash("size", size);
+        res.redirect("/home");
     }
 });
 
 
-
-
-app.post("/pdfupload", pdfupload.array("file"), (req, res) => {
-    res.render("pdfhuffman");
-});
-
-
-
-app.get("/encode", (req, res) => {
-    compress();
-    res.render('text_downloadpage')
-});
-
 app.get("/encode/downloaded", (req, res) => {
-
     res.download('./compressed.zip')
 })
-
-
-
-app.get("/pdfencode", (req, res) => {
-    Pdfcompress();
-    res.render('pdf_downloadpage')
-
-});
-
-app.get("/pdfencode/downloaded", (req, res) => {
-
-    res.download('./pdfcompressed.zip')
-})
-
-
-
-app.get("/huffman/decompress", (req, res) => {
+app.get("/decompress", (req, res) => {
     res.render("decompress.ejs");
 });
 
 
-
-
-app.get("/huffman/pdf-decompress", (req, res) => {
-    res.render("pdf_decompress.ejs");
-});
-
-
-
-app.post("/huffman/decompress", upload.single("file"), (req, res) => {
-    console.log(`new file name - ${req.file.filename}`)
+app.post("/decompress", upload.single("file"), (req, res) => {
     decompress(req.file.filename);
     res.render("decompressed_text_downloadpage");
 });
 
-
-
-app.post("/huffman/pdf-decompress", upload.single("file"), (req, res) => {
-    Pdfdecompress(req.file.filename);
-    res.redirect('/huffman')
-});
 app.get('/decompressed/download', (req, res) => {
     res.download('./decompressed.txt')
 
