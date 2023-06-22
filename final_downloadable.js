@@ -47,6 +47,7 @@ const fs = require("fs");
 const archiver = require("archiver");
 const flash = require("connect-flash");
 const session = require("express-session");
+const path = require("path")
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -102,6 +103,7 @@ app.post("/home", (req, res) => {
     if (choice === "text") {
         res.render("txtupload");
     } else if (choice === "pdf") {
+        deleteFolderContents('./pdfcompressed');
         res.render("pdfupload");
     }
 });
@@ -113,7 +115,7 @@ app.post("/pdf", pdfupload.array("file"), (req, res) => {
     for (let file of name) {
         size += file.size;
     }
-    if (size < 2) {
+    if (size < 20000000) {
         Pdfcompress();
         res.render("pdf_downloadpage");
     } else {
@@ -378,6 +380,7 @@ function decompress(compressedfilename) {
 // /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////
 // function to decompress pdf files
 function Pdfdecompress(compressedpdf) {
+    deleteFolderContents('./pdfdecompressed');
     function unzipFile(zipFilePath, destinationPath) {
         const zip1 = new AdmZip(zipFilePath);
         zip1.extractAllTo(destinationPath, true);
@@ -389,6 +392,42 @@ function Pdfdecompress(compressedpdf) {
 
     unzipFile(compressedFilePath, extractionPath);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+function deleteFolderContents(folderPath) {
+    fs.readdir(folderPath, (err, files) => {
+        if (err) {
+            console.error('Error reading folder:', err);
+            return;
+        }
+
+        files.forEach((file) => {
+            const filePath = path.join(folderPath, file);
+
+            fs.stat(filePath, (err, stat) => {
+                if (err) {
+                    console.error('Error retrieving file information:', err);
+                    return;
+                }
+
+                if (stat.isDirectory()) {
+                    deleteFolderContents(filePath); // Recursively delete subfolders
+                } else {
+                    fs.unlink(filePath, (err) => {
+                        if (err) {
+                            console.error('Error deleting file:', err);
+                            return;
+                        }
+
+
+                    });
+                }
+            });
+        });
+    });
+}
+
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
