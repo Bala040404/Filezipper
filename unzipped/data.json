@@ -1,0 +1,118 @@
+[
+    [
+        null,
+        null
+    ],
+    [
+        {
+            "left": {
+                "left": {
+                    "left": {
+                        "left": "h",
+                        "right": {
+                            "left": {
+                                "left": "v",
+                                "right": "w"
+                            },
+                            "right": "c"
+                        }
+                    },
+                    "right": {
+                        "left": {
+                            "left": {
+                                "left": {
+                                    "left": "j",
+                                    "right": "k"
+                                },
+                                "right": {
+                                    "left": ".",
+                                    "right": {
+                                        "left": {
+                                            "left": "2",
+                                            "right": "x"
+                                        },
+                                        "right": "'"
+                                    }
+                                }
+                            },
+                            "right": "f"
+                        },
+                        "right": {
+                            "left": "l",
+                            "right": {
+                                "left": "I",
+                                "right": ","
+                            }
+                        }
+                    }
+                },
+                "right": " "
+            },
+            "right": {
+                "left": {
+                    "left": {
+                        "left": {
+                            "left": "m",
+                            "right": {
+                                "left": "g",
+                                "right": {
+                                    "left": {
+                                        "left": {
+                                            "left": "A",
+                                            "right": "0"
+                                        },
+                                        "right": {
+                                            "left": "T",
+                                            "right": "-"
+                                        }
+                                    },
+                                    "right": "L"
+                                }
+                            }
+                        },
+                        "right": "o"
+                    },
+                    "right": {
+                        "left": "t",
+                        "right": "r"
+                    }
+                },
+                "right": {
+                    "left": {
+                        "left": {
+                            "left": "i",
+                            "right": "s"
+                        },
+                        "right": {
+                            "left": {
+                                "left": {
+                                    "left": "b",
+                                    "right": "p"
+                                },
+                                "right": "u"
+                            },
+                            "right": "a"
+                        }
+                    },
+                    "right": {
+                        "left": {
+                            "left": "n",
+                            "right": {
+                                "left": {
+                                    "left": "y",
+                                    "right": {
+                                        "left": "\r",
+                                        "right": "\n"
+                                    }
+                                },
+                                "right": "d"
+                            }
+                        },
+                        "right": "e"
+                    }
+                }
+            }
+        },
+        462737
+    ]
+]
