@@ -1,5 +1,6 @@
 //min heap data structure
 
+let extension = "";
 function heapify(arr, size, i) {
     let l = 2 * i;
     let r = 2 * i + 1;
@@ -37,7 +38,6 @@ function getmin(arr) {
     heap_util(arr, size);
     return min;
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //required modules
 const AdmZip = require("adm-zip");
@@ -48,9 +48,10 @@ const archiver = require("archiver");
 const flash = require("connect-flash");
 const session = require("express-session");
 const path = require("path")
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+const mammoth = require('mammoth');
+const officegen = require('officegen');
+const docx = officegen('docx')
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 //initialisation
 const app = express();
@@ -78,21 +79,8 @@ const storage = multer.diskStorage({
         cb(null, file.originalname);
     },
 });
-
-const pdfstorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "pdfcompressed/");
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    },
-});
-
 const upload = multer({ storage: storage });
-const pdfupload = multer({ storage: pdfstorage });
-
 //necessary routes
-
 app.get("/home", (req, res) => {
     const filesize = req.flash("size");
     res.render("option", { filesize });
@@ -100,56 +88,44 @@ app.get("/home", (req, res) => {
 
 app.post("/home", (req, res) => {
     const { choice } = req.body;
-    if (choice === "text") {
-        res.render("txtupload");
-    } else if (choice === "pdf") {
-        deleteFolderContents('./pdfcompressed');
-        res.render("pdfupload");
+    if (choice === "compress") {
+        res.render("upload");
+    } else if (choice === "decompress") {
+        res.render("decompress");
     }
 });
 
-//PDF related routes
-app.post("/pdf", pdfupload.array("file"), (req, res) => {
-    name = req.files;
-    let size = 0;
-    for (let file of name) {
-        size += file.size;
-    }
-    if (size < 20000000) {
-        Pdfcompress();
-        res.render("pdf_downloadpage");
-    } else {
-        req.flash("size", size);
-        res.redirect("/home");
-    }
-});
 
-app.get("/pdfdecompress", (req, res) => {
-    res.render("pdf_decompress.ejs");
-});
-
-app.get("/pdfupload/pdfdownloaded", (req, res) => {
-    res.download('./pdfcompressed.zip')
-})
-
-app.post("/pdfdecompress", upload.single("file"), (req, res) => {
-    Pdfdecompress(req.file.filename);
-    res.redirect('/home')
-});
 
 //TXT related
 app.post("/txt", upload.array("file"), (req, res) => {
     name = req.files;
+    extension = name[0].originalname.split('.').pop();
     let size = 0;
     for (let file of name) {
         size += file.size;
     }
-    if (size < 20000000) {
-        compress();
-        res.render("text_downloadpage");
-    } else {
+    if ((extension === "zip") || (extension === "pptx")) {
+        size = 2//2 indicates that file is of invalid type
         req.flash("size", size);
         res.redirect("/home");
+
+    } else {
+
+
+        if (size === 0) {
+            size = 1//1 indicatrs that file is empty
+            req.flash("size", size);
+            res.redirect("/home");
+
+        }
+        else if (size < 20000000) {
+            compress();
+            res.render("downloadpage");
+        } else {
+            req.flash("size", size);
+            res.redirect("/home");
+        }
     }
 });
 
@@ -163,20 +139,27 @@ app.get("/decompress", (req, res) => {
 
 
 app.post("/decompress", upload.single("file"), (req, res) => {
-    decompress(req.file.filename);
-    res.render("decompressed_text_downloadpage");
+
+    decompressextension = req.file.originalname.split('.').pop();
+    if (decompressextension !== "zip") {
+        size = 3//3 indicates that file is of invalid type for decompression
+        req.flash("size", size);
+        res.redirect("/home");
+    } else {
+        decompress(req.file.filename);
+        res.render("decompressedDownloadpage");
+    }
 });
 
 app.get('/decompressed/download', (req, res) => {
-    res.download('./decompressed.txt')
+    res.download(`./decompressed.${extension}`)
+
 
 })
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // function to compress text files
 
-function compress() {
+async function compress() {
     class Node {
         constructor(left = null, right = null) {
             this.left = left;
@@ -200,8 +183,35 @@ function compress() {
 
     let frequency = [[undefined, undefined]];
     let word = "";
-    for (let i = 0; i < name.length; i++) {
-        word = word + fs.readFileSync(`uploads/${name[i].originalname}`, "utf-8");
+
+    if (extension != 'docx') {
+        for (let i = 0; i < name.length; i++) {
+
+            word = word + fs.readFileSync(`uploads/${name[i].originalname}`, "utf-8");
+        }
+    }
+    else {
+
+        async function processFiles() {
+            let x = ""
+            for (let i = 0; i < name.length; i++) {
+
+                let data = fs.readFileSync(`uploads/${name[i].originalname}`, 'binary');
+
+                try {
+                    let result = await mammoth.extractRawText({ buffer: data });
+                    let text = result.value.trim();
+                    x = x + text;
+                } catch (error) {
+                    console.error('Error extracting text:', error);
+                }
+            }
+
+            return x
+
+
+        }
+        word = await processFiles()
     }
 
     for (const letter of word) {
@@ -219,7 +229,6 @@ function compress() {
             frequency.push([letter, 1]);
         }
     }
-
     let nodes = frequency;
 
     while (nodes.length > 2) {
@@ -264,8 +273,6 @@ function compress() {
     archive.pipe(output);
     archive.directory("compressed/", false);
     archive.finalize();
-
-
     //the function which converts string of ones and zero to binary array
 
     function binaryStringToUint8Array(binaryString) {
@@ -281,28 +288,6 @@ function compress() {
         return uint8Array;
     }
 }
-
-
-// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////  
-// function to compress pdf files 
-function Pdfcompress() {
-    const outputFilePath = "pdfcompressed.zip";
-    const output = fs.createWriteStream(outputFilePath);
-    const archive = archiver("zip", { zlib: { level: 9 } });
-
-    output.on("close", () => {
-        console.log("Compression complete!");
-    });
-
-    archive.on("error", (err) => {
-        throw err;
-    });
-
-    archive.pipe(output);
-    archive.directory("pdfcompressed/", false);
-    archive.finalize();
-}
-
 ///////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// ////////////////////////////////////////
 // function to decompress text files
 function decompress(compressedfilename) {
@@ -373,64 +358,89 @@ function decompress(compressedfilename) {
         const tree_parsed = JSON.parse(tree);
 
         const decoded = decode(binaryString, tree_parsed[1][0]);
+        if (extension === "") {
+            extension = "txt";
+        }
+        let newname = "decompressed." + extension
 
-        fs.writeFileSync("decompressed.txt", decoded);
-    });
-}
-// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////// /////////////////////////////////////////
-// function to decompress pdf files
-function Pdfdecompress(compressedpdf) {
-    deleteFolderContents('./pdfdecompressed');
-    function unzipFile(zipFilePath, destinationPath) {
-        const zip1 = new AdmZip(zipFilePath);
-        zip1.extractAllTo(destinationPath, true);
-        console.log("Unzipping complete!");
-    }
-
-    const compressedFilePath = `uploads/${compressedpdf}`;
-    const extractionPath = "pdfdecompressed";
-
-    unzipFile(compressedFilePath, extractionPath);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-function deleteFolderContents(folderPath) {
-    fs.readdir(folderPath, (err, files) => {
-        if (err) {
-            console.error('Error reading folder:', err);
-            return;
+        if (extension != "docx") {
+            fs.writeFileSync(newname, decoded);
         }
 
-        files.forEach((file) => {
-            const filePath = path.join(folderPath, file);
-
-            fs.stat(filePath, (err, stat) => {
-                if (err) {
-                    console.error('Error retrieving file information:', err);
-                    return;
-                }
-
-                if (stat.isDirectory()) {
-                    deleteFolderContents(filePath); // Recursively delete subfolders
-                } else {
-                    fs.unlink(filePath, (err) => {
-                        if (err) {
-                            console.error('Error deleting file:', err);
-                            return;
-                        }
+        else {
 
 
-                    });
-                }
-            });
-        });
+            const p = docx.createP()
+            p.addText(decoded)
+            const out = fs.createWriteStream(newname)
+            docx.generate(out)
+        }
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Node {
+    constructor(key = null, value = null) {
+        this.key = key;
+        this.value = value;
+        this.next = null;
+    }
+}
 
+class hashTable {
+    constructor() {
+        this.table = Array(71).fill(new Node());
+    }
+
+    hash(key) {
+        const charCode = key.charCodeAt(0);
+        return charCode % 71;
+    }
+
+    set(key, value) {
+        const place = this.hash(key);
+        let cur = this.table[place];
+
+        while ((cur.next !== null)) {
+            if (cur.key === key) {
+                cur.value = value;
+                return
+            } else {
+                cur = cur.next;
+            }
+        }
+        cur.next = new Node(key, value);
+    }
+
+    get(key) {
+        const place = this.hash(key);
+        let cur = this.table[place];
+
+        while (cur.next !== null) {
+            cur = cur.next;
+            if (cur.key === key) {
+                return cur.value;
+            }
+        }
+        return null
+    }
+}
+
+const h = new hashTable();
+
+function calculateLetterFrequencies(word) {
+    // Iterate over each character in the word
+    for (let i = 0; i < word.length; i++) {
+        letter = word[i]
+        // Increment the frequency count for the letter in the hash table
+        if (h.get(letter)) {
+            h.set(letter, h.get(letter) + 1);
+        } else {
+            h.set(letter, 1);
+        }
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
-
-

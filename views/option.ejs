@@ -31,31 +31,51 @@
 
         <main>
             <% if(filesize!='' ){%>
+                <%if (filesize[0]===1 ) { %>
+                    <h3 id="alert"><i class="material-icons">warning</i> Sorry the file size was empty
+                    </h3>
+                    <% }else if (filesize[0]===2){ %>
+                        <h3 id="alert"><i class="material-icons">warning</i> Sorry the file type is invalid
+                        </h3>
+                        <% }else if (filesize[0]===3){ %>
+                            <h3 id="alert"><i class="material-icons">warning</i> Sorry the file type is invalid for
+                                decompression
+                            </h3>
 
-                <h3 id="alert"><i class="material-icons">warning</i> Sorry the file size was greater than 20 MB. Try
-                    again with smaller file size.
-                </h3>
-                <% }%>
-                    <h2>Create ZIP File</h2>
-                    <p>With this online ZIP converter you can compress your files and create a ZIP archive. Reduce file
-                        size
-                        and
-                        save bandwidth with ZIP compression.</p>
-                    <div id="back">
-                        <form action="/home" method="post">
-                            <label for="choice">Choose an appropriate file format -- (Accepted file types .pdf, .txt) --
-                            </label>
-                            <br>
-                            <select id="choice" name="choice" required>
-                                <option name="opt" value="opt" disabled selected>-Select an option-</option>
-                                <option name="pdf" value="pdf">PDF
-                                </option>
-                                <option name="text" value="text">Text</option>
+                            <% }else{ %>
 
-                            </select>
-                            <button id="ok">OK</button>
-                        </form>
-                    </div>
+                                <h3 id="alert"><i class="material-icons">warning</i> Sorry the file size was greater
+                                    than 20
+                                    MB.
+                                    Try
+                                    again with smaller file size.
+                                </h3>
+                                <% } %>
+                                    <% }%>
+                                        <h2>Create ZIP File</h2>
+                                        <p>With this online ZIP converter you can compress your files and create a ZIP
+                                            archive.
+                                            Reduce file
+                                            size
+                                            and
+                                            save bandwidth with ZIP compression.</p>
+                                        <div id="back">
+                                            <form action="/home" method="post">
+                                                <label for="choice">Choose an appropriate file format -- (Accepted file
+                                                    types.txt,.xml.json)
+                                                    --
+                                                </label>
+                                                <br>
+                                                <select id="choice" name="choice" required>
+                                                    <option name="opt" value="opt" disabled>-Select an option-</option>
+                                                    <option name="decompress" value="decompress">Decompress
+                                                    </option>
+                                                    <option name="compress" value="compress" selected>Compress</option>
+
+                                                </select>
+                                                <button id="ok">OK</button>
+                                            </form>
+                                        </div>
 
         </main>
     </div>

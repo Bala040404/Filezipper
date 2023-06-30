@@ -11,6 +11,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script>
+        function loadGIF() {
+            let fileInput = document.getElementById("og");
+            if (fileInput.files.length !== 0) {
+                let image = document.getElementById("myImage");
+                image.style.display = "inline";
+            }
+        }
+    </script>
+    <style>
+        #myImage {
+            display: none;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -37,7 +53,8 @@
                         <label for='input-file'>
                             <i class="material-icons">cloud_download</i>Decompress
                         </label>
-                        <input id='input-file' type='submit' />
+                        <img id="myImage" src="spinner-loading.gif" alt="Image" width="60" height="60">
+                        <input id='input-file' type='submit' onclick="loadGIF()" />
                     </div>
                 </div>
 
